@@ -1,0 +1,180 @@
+import 'dart:convert';
+
+import 'package:currency_picker/currency_picker.dart';
+import 'package:expenses_app/db/db_helper.dart';
+import 'package:expenses_app/models/account_transaction.dart';
+import 'package:expenses_app/models/settings.dart';
+import 'package:expenses_app/utils/constants.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class TransactionForm extends StatefulWidget {
+  final bool isFullForm;
+  final AccountTransaction? accountTransaction;
+
+  const TransactionForm(
+      {super.key, required this.accountTransaction, required this.isFullForm});
+
+  @override
+  State<TransactionForm> createState() => _TransactionFormState();
+}
+
+enum TransactionType { credit, debit }
+
+class _TransactionFormState extends State<TransactionForm> {
+  late bool _isFullForm;
+  late AccountTransaction? _accountTransaction;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _titleController = TextEditingController();
+  bool _isLoading = true;
+  bool _isSaving = false;
+  late SharedPreferences _preferences;
+  TransactionType _transactionType = TransactionType.debit;
+  String tempAmount = '0';
+
+  @override
+  void initState() {
+    super.initState();
+    _accountTransaction = widget.accountTransaction;
+    _isFullForm = widget.isFullForm;
+
+    SharedPreferences.getInstance().then((preferences) {
+      _preferences = preferences;
+      setState(() {
+        _isLoading = false;
+      });
+    });
+
+    if (_accountTransaction != null) {
+      _amountController.text = (_accountTransaction!.total / 100).toString();
+      _titleController.text = _accountTransaction!.title!;
+      _transactionType = _accountTransaction!.type == 'credit'
+          ? TransactionType.credit
+          : TransactionType.debit;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          SegmentedButton<TransactionType>(
+            style: const ButtonStyle(
+              visualDensity: VisualDensity(vertical: 1),
+            ),
+            segments: const <ButtonSegment<TransactionType>>[
+              ButtonSegment<TransactionType>(
+                value: TransactionType.debit,
+                label: Text("Debit"),
+                icon: Icon(Icons.remove_circle_outline),
+              ),
+              ButtonSegment<TransactionType>(
+                value: TransactionType.credit,
+                label: Text("Credit"),
+                icon: Icon(Icons.add_circle_outline),
+              ),
+            ],
+            selected: <TransactionType>{_transactionType},
+            onSelectionChanged: (selection) {
+              setState(() {
+                _transactionType = selection.first;
+              });
+            },
+          ),
+          if (_isFullForm) const SizedBox(height: 16),
+          if (_isFullForm)
+            TextFormField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.note),
+                border: OutlineInputBorder(),
+                hintText: 'Title',
+                labelText: 'Transaction title',
+              ),
+              keyboardType: TextInputType.text,
+            ),
+          const SizedBox(height: 16),
+          TextFormField(
+            controller: _amountController,
+            decoration: const InputDecoration(
+              prefixIcon: Icon(Icons.money_outlined),
+              border: OutlineInputBorder(),
+              hintText: 'Amount',
+              labelText: 'Transaction amount',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(),
+            validator: (value) {
+              double? amount = double.tryParse(value!);
+              if (amount != null) {
+                return null;
+              }
+
+              return 'Please enter a valid number';
+            },
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton.icon(
+            icon: _getSaveIcon(),
+            onPressed: () {
+              bool isFormValid = _formKey.currentState!.validate();
+              if (isFormValid) {
+                _saveTransaction();
+              }
+            },
+            label: const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text('Save'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  _saveTransaction() {
+    setState(() {
+      _isSaving = true;
+    });
+    double amount = double.parse(_amountController.text.toString());
+    String title = _titleController.text.toString();
+
+    if (_accountTransaction != null) {
+      _accountTransaction!.total = (amount * 100).floor();
+      _accountTransaction!.title = title;
+      _accountTransaction!.type =
+          _transactionType == TransactionType.credit ? 'credit' : 'debit';
+      DbHelper.instance.updateTransaction(_accountTransaction!);
+    } else {
+      DbHelper.instance.createTransaction(
+        1,
+        _transactionType == TransactionType.credit ? 'Income' : 'Expense',
+        null,
+        (amount * 100).floor(),
+        _transactionType == TransactionType.credit ? 'credit' : 'debit',
+        DateTime.now(),
+      );
+    }
+
+    setState(() {
+      _isSaving = false;
+    });
+
+    Navigator.pop(context);
+  }
+
+  _getSaveIcon() {
+    if (_isSaving) {
+      return const CircularProgressIndicator();
+    }
+    return const Icon(Icons.check_circle_outline);
+  }
+}
