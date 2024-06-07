@@ -120,7 +120,7 @@ class _DashboardState extends State<Dashboard> {
                 ),
               ],
             ),
-            subtitle: Text(DateFormat('dd MMM, hh:mm a')
+            subtitle: Text(DateFormat(Constants.dateTimeFormat)
                 .format(transaction.transactionTime)),
             onTap: () => _editItem(transaction),
           ),

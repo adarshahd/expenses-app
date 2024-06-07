@@ -1,6 +1,9 @@
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
+import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:omni_datetime_picker/omni_datetime_picker.dart';
 
 class TransactionForm extends StatefulWidget {
   final bool isFullForm;
@@ -21,9 +24,12 @@ class _TransactionFormState extends State<TransactionForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _transactionTimeController =
+      TextEditingController();
   bool _isSaving = false;
   TransactionType _transactionType = TransactionType.debit;
   static String tempAmount = '';
+  DateTime _transactionTime = DateTime.now();
 
   @override
   void initState() {
@@ -48,7 +54,11 @@ class _TransactionFormState extends State<TransactionForm> {
       _transactionType = _accountTransaction!.type == 'credit'
           ? TransactionType.credit
           : TransactionType.debit;
+      _transactionTime = _accountTransaction!.transactionTime;
     }
+
+    _transactionTimeController.text =
+        DateFormat(Constants.dateTimeFormat).format(_transactionTime);
   }
 
   @override
@@ -113,6 +123,18 @@ class _TransactionFormState extends State<TransactionForm> {
             autofocus: true,
             onChanged: (value) => tempAmount = value,
           ),
+          if (_isFullForm) const SizedBox(height: 16),
+          if (_isFullForm)
+            TextFormField(
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.calendar_month_outlined),
+                border: OutlineInputBorder(),
+                labelText: 'Transaction time',
+              ),
+              controller: _transactionTimeController,
+              readOnly: true,
+              onTap: () => _showDatePicker(),
+            ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
             icon: _getSaveIcon(),
@@ -144,6 +166,8 @@ class _TransactionFormState extends State<TransactionForm> {
       _accountTransaction!.title = title;
       _accountTransaction!.type =
           _transactionType == TransactionType.credit ? 'credit' : 'debit';
+      _accountTransaction!.transactionTime = _transactionTime;
+
       DbHelper.instance.updateTransaction(_accountTransaction!);
     } else {
       DbHelper.instance.createTransaction(
@@ -152,7 +176,7 @@ class _TransactionFormState extends State<TransactionForm> {
         null,
         (amount * 100).floor(),
         _transactionType == TransactionType.credit ? 'credit' : 'debit',
-        DateTime.now(),
+        _transactionTime,
       );
     }
 
@@ -170,5 +194,19 @@ class _TransactionFormState extends State<TransactionForm> {
       return const CircularProgressIndicator();
     }
     return const Icon(Icons.check_circle_outline);
+  }
+
+  _showDatePicker() async {
+    DateTime? dateTime = await showOmniDateTimePicker(
+      context: context,
+      borderRadius: const BorderRadius.all(Radius.zero),
+      initialDate: _transactionTime,
+    );
+
+    setState(() {
+      _transactionTime = dateTime ?? _transactionTime;
+      _transactionTimeController.text =
+          DateFormat(Constants.dateTimeFormat).format(_transactionTime);
+    });
   }
 }
