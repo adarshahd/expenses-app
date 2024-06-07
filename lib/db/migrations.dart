@@ -1,27 +1,13 @@
-import 'dart:io';
-
-import 'package:expenses_app/db/db_helper.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'package:path/path.dart' as p;
 
 class Migrations {
-  late final DbHelper dbHelper;
+  late final String _dbPath;
 
-  Directory? appDocumentsDir;
-
-  String? dbPath;
-
-  final dbName = "expenses.db";
-
-  Migrations() {
-    dbHelper = DbHelper.instance;
+  Migrations({required String dbPath}) {
+    _dbPath = dbPath;
   }
 
-  Future<void> runMigrations() async {
-    appDocumentsDir = await getApplicationDocumentsDirectory();
-    dbPath = p.join(appDocumentsDir!.path, "databases", dbName);
-
+  Future<void> run() async {
     _createAccountsTable();
     _createAccountTransactionsTable();
     _createAccountTransfersTabel();
@@ -33,13 +19,14 @@ class Migrations {
   }
 
   Future<void> _createAccountsTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "accounts" (
         "id"	INTEGER NOT NULL,
         "title"	text NOT NULL,
         "description"	text,
         "active"	integer NOT NULL DEFAULT 1,
+        "default" integer NOT NULL DEFAULT 0,
         "icon"	text,
         "balance"	INTEGER NOT NULL,
         "initial_balance"	INTEGER NOT NULL DEFAULT 0,
@@ -52,7 +39,7 @@ class Migrations {
   }
 
   Future<void> _createAccountTransactionsTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "account_transactions" (
         "id"	INTEGER NOT NULL,
@@ -72,7 +59,7 @@ class Migrations {
   }
 
   Future<void> _createAccountTransfersTabel() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "account_transfers" (
         "id"	INTEGER NOT NULL,
@@ -92,7 +79,7 @@ class Migrations {
   }
 
   Future<void> _createCategoriesTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "categories" (
         "id"	INTEGER NOT NULL,
@@ -107,7 +94,7 @@ class Migrations {
   }
 
   Future<void> _createTrasactionCategoriesTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "transaction_categories" (
         "id"	INTEGER NOT NULL,
@@ -124,7 +111,7 @@ class Migrations {
   }
 
   Future<void> _createTagsTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "tags" (
         "id"	INTEGER NOT NULL,
@@ -140,7 +127,7 @@ class Migrations {
   }
 
   Future<void> _createTransactionTagsTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "transaction_tags" (
         "id"	INTEGER NOT NULL,
@@ -157,7 +144,7 @@ class Migrations {
   }
 
   Future<void> _createSettingsTable() async {
-    Database db = await databaseFactory.openDatabase(dbPath!);
+    Database db = await databaseFactory.openDatabase(_dbPath);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "settings" (
         "id"	INTEGER NOT NULL,

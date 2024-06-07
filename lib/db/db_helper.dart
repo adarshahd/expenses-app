@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:currency_picker/currency_picker.dart';
+import 'package:expenses_app/db/initialize.dart';
 import 'package:expenses_app/db/migrations.dart';
 import 'package:expenses_app/models/account_transaction.dart';
 import 'package:expenses_app/models/accounts.dart';
@@ -32,60 +33,18 @@ class DbHelper {
     /**
      * Handle migrations
      */
-    // var result = db.query('migrations', co)
-    await _migrate();
+    await Migrations(dbPath: _dbPath!).run();
 
-    // Initialize database with essential entries
-    await _createEntries();
+    /**
+     * Initialize database with essential entries
+     */
+    await Initialize(dbPath: _dbPath!).run();
   }
 
-  Future<void> _migrate() async {
-    await Migrations().runMigrations();
+  Future<void> clearDatabase() async {
+    File.fromUri(Uri.file(_dbPath!)).deleteSync();
+    initialize();
   }
-
-  Future<void> _createEntries() async {
-    // Create default account if not created before
-    Setting? defaultAccountCreated =
-        await getSetting(Constants.settingDefaultAccountCreated);
-
-    if (defaultAccountCreated == null ||
-        !bool.parse(defaultAccountCreated.value)) {
-      createAccount('Default', 'Default account');
-      createOrUpdateSetting(Constants.settingDefaultAccountCreated, true);
-    }
-
-    Setting? defaultCategoriesCreated =
-        await getSetting(Constants.settingDefaultCategoriesCreated);
-
-    if (defaultCategoriesCreated == null ||
-        !bool.parse(defaultCategoriesCreated.value)) {
-      createCategory('Others', 'Default Category');
-      createOrUpdateSetting(Constants.settingDefaultCategoriesCreated, true);
-    }
-
-    Setting? defaultApplicationThemeModeSet =
-        await getSetting(Constants.settingThemeModeSet);
-
-    if (defaultApplicationThemeModeSet == null ||
-        !bool.parse(defaultApplicationThemeModeSet.value)) {
-      createOrUpdateSetting(Constants.settingApplicationThemeMode, false);
-      createOrUpdateSetting(Constants.settingThemeModeSet, true);
-    }
-
-    Setting? defaultApplicationCurrencySet =
-        await getSetting(Constants.settingDefaultCurrencySet);
-    if (defaultApplicationCurrencySet == null ||
-        !bool.parse(defaultApplicationCurrencySet.value)) {
-      Currency? currencyINR = CurrencyService().findByCode("INR");
-      createOrUpdateSetting(Constants.settingApplicationCurrency,
-          jsonEncode(currencyINR!.toJson()));
-      createOrUpdateSetting(Constants.settingDefaultCurrencySet, true);
-    }
-  }
-
-  // Future<void> clearDatabase() async {
-  //   Database db = await databaseFactory.openDatabase(_dbPath!);
-  // }
 
   Future<List<Setting>> getSettings() async {
     List<Setting> settings;
@@ -153,13 +112,14 @@ class DbHelper {
   }
 
   Future<int> createAccount(String accountTitle, String accountDescription,
-      {int balance = 0, int initialBalance = 0}) async {
+      {int balance = 0, int initialBalance = 0, bool isDefault = false}) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
     int id = await db.insert('accounts', {
       'title': accountTitle,
       'description': accountDescription,
       'balance': balance,
       'initial_balance': initialBalance,
+      'default': isDefault ? 1 : 0
     });
 
     return id;
