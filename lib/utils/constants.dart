@@ -11,4 +11,5 @@ class Constants {
   static const String settingApplicationCurrency = "application_currency";
 
   static const String prefTxnTempAmount = "transaction_temp_amount";
+  static const String prefIsFirstRun = "is_first_run";
 }

@@ -1,13 +1,10 @@
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/settings.dart';
-import 'package:expenses_app/screens/components/desktop_container.dart';
-import 'package:expenses_app/screens/components/mobile_container.dart';
 import 'package:expenses_app/screens/dashboard.dart';
-import 'package:expenses_app/screens/transaction.dart';
+import 'package:expenses_app/screens/home.dart';
 import 'package:expenses_app/screens/settings.dart';
 import 'package:expenses_app/utils/app_state_notifier.dart';
 import 'package:expenses_app/utils/constants.dart';
-import 'package:expenses_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:provider/provider.dart';
@@ -85,11 +82,7 @@ class _ExpensesState extends State<Expenses> {
       );
     }
 
-    if (Utils.isLargeScreen(context)) {
-      return const DesktopContainer();
-    }
-
-    return const MobileContainer();
+    return const Home();
   }
 
   _getTheme(appState) {

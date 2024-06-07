@@ -1,9 +1,6 @@
-import 'package:expenses_app/screens/components/transaction_form.dart';
 import 'package:expenses_app/screens/dashboard.dart';
-import 'package:expenses_app/screens/transaction.dart';
 import 'package:expenses_app/screens/settings.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MobileContainer extends StatefulWidget {
   const MobileContainer({super.key});

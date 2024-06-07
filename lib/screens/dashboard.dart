@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
-import 'package:expenses_app/models/accounts.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/screens/components/transaction_form.dart';
 import 'package:expenses_app/screens/transaction.dart';
