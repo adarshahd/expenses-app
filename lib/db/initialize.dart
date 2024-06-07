@@ -6,11 +6,9 @@ import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/utils/constants.dart';
 
 class Initialize {
-  late final String _dbPath;
   late final DbHelper _dbHelper;
 
   Initialize({required String dbPath}) {
-    _dbPath = dbPath;
     _dbHelper = DbHelper.instance;
   }
 

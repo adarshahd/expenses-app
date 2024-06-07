@@ -1,12 +1,6 @@
-import 'dart:convert';
-
-import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
-import 'package:expenses_app/models/settings.dart';
-import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TransactionForm extends StatefulWidget {
   final bool isFullForm;
@@ -27,11 +21,9 @@ class _TransactionFormState extends State<TransactionForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _titleController = TextEditingController();
-  bool _isLoading = true;
   bool _isSaving = false;
-  late SharedPreferences _preferences;
   TransactionType _transactionType = TransactionType.debit;
-  String tempAmount = '0';
+  static String tempAmount = '';
 
   @override
   void initState() {
@@ -39,12 +31,16 @@ class _TransactionFormState extends State<TransactionForm> {
     _accountTransaction = widget.accountTransaction;
     _isFullForm = widget.isFullForm;
 
-    SharedPreferences.getInstance().then((preferences) {
-      _preferences = preferences;
-      setState(() {
-        _isLoading = false;
-      });
-    });
+    // If we have amount entered in the dialog/bottom sheet, populate the same
+    // in the full form
+    if (tempAmount.isNotEmpty && _isFullForm) {
+      _amountController.text = tempAmount;
+    }
+
+    // Clear the amount field if the form is reopened from dialog/bottom sheet
+    if (!_isFullForm) {
+      tempAmount = '';
+    }
 
     if (_accountTransaction != null) {
       _amountController.text = (_accountTransaction!.total / 100).toString();
@@ -57,12 +53,6 @@ class _TransactionFormState extends State<TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
-    }
-
     return Form(
       key: _formKey,
       child: Column(
@@ -120,6 +110,8 @@ class _TransactionFormState extends State<TransactionForm> {
 
               return 'Please enter a valid number';
             },
+            autofocus: true,
+            onChanged: (value) => tempAmount = value,
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
@@ -163,6 +155,8 @@ class _TransactionFormState extends State<TransactionForm> {
         DateTime.now(),
       );
     }
+
+    tempAmount = '';
 
     setState(() {
       _isSaving = false;
