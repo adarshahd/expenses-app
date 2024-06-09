@@ -4,6 +4,7 @@ import 'package:expenses_app/db/initialize.dart';
 import 'package:expenses_app/db/migrations.dart';
 import 'package:expenses_app/models/account_transaction.dart';
 import 'package:expenses_app/models/accounts.dart';
+import 'package:expenses_app/models/categories.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/models/transaction_categories.dart';
 import 'package:path/path.dart' as p;
@@ -207,8 +208,8 @@ class DbHelper {
     return id;
   }
 
-  Future<List<TransactionCategory>> getCategories() async {
-    List<TransactionCategory> categories;
+  Future<List<Category>> getCategories() async {
+    List<Category> categories;
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
     var result = await db.query(
@@ -216,13 +217,12 @@ class DbHelper {
       where: 'deleted_at IS NULL',
       orderBy: 'id desc',
     );
-    categories =
-        result.map((item) => TransactionCategory.fromJson(item)).toList();
+    categories = result.map((item) => Category.fromJson(item)).toList();
 
     return categories;
   }
 
-  Future<TransactionCategory?> getCategory(int id) async {
+  Future<Category?> getCategory(int id) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
     var result = await db.query(
@@ -230,8 +230,8 @@ class DbHelper {
       where: 'id = ?1 AND deleted_at IS NULL',
       whereArgs: [id],
     );
-    TransactionCategory? category =
-        result.map((item) => TransactionCategory.fromJson(item)).firstOrNull;
+    Category? category =
+        result.map((item) => Category.fromJson(item)).firstOrNull;
 
     return category;
   }
@@ -239,10 +239,30 @@ class DbHelper {
   Future<int> createCategory(String title, String description) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
-    int id = await db.insert('categories', {
-      'title': title,
-      'description': description,
-    });
+    int id = await db.insert(
+      'categories',
+      {
+        'title': title,
+        'description': description,
+      },
+    );
+
+    return id;
+  }
+
+  Future<int> updateCategory(
+      int categoryId, String title, String description) async {
+    Database? db = await databaseFactory.openDatabase(_dbPath!);
+
+    int id = await db.update(
+      'categories',
+      {
+        'title': title,
+        'description': description,
+      },
+      where: 'id = ?',
+      whereArgs: [categoryId],
+    );
 
     return id;
   }
@@ -260,33 +280,38 @@ class DbHelper {
     return transactionCategory;
   }
 
-  Future<int> createOrUpdateTransactionCategory(
+  Future<int> createTransactionCategory(
     int txnId,
     int categoryId,
   ) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
-    TransactionCategory? category = await getTransactionCategory(txnId);
-    int id;
-    if (category == null) {
-      id = await db.insert(
-        'transaction_categories',
-        {
-          'account_transaction_id': txnId,
-          'category_id': categoryId,
-        },
-      );
-    } else {
-      id = category.id;
-      await db.update(
-          'transaction_categories',
-          {
-            'account_transaction_id': txnId,
-            'category_id': categoryId,
-          },
-          where: 'id = ?',
-          whereArgs: [id]);
-    }
+    int id = await db.insert(
+      'transaction_categories',
+      {
+        'account_transaction_id': txnId,
+        'category_id': categoryId,
+      },
+    );
 
     return id;
+  }
+
+  Future<int> updateTransactionCategory(
+    int transactionCategoryId,
+    int txnId,
+    int categoryId,
+  ) async {
+    Database? db = await databaseFactory.openDatabase(_dbPath!);
+    await db.update(
+      'transaction_categories',
+      {
+        'account_transaction_id': txnId,
+        'category_id': categoryId,
+      },
+      where: 'id = ?',
+      whereArgs: [transactionCategoryId],
+    );
+
+    return transactionCategoryId;
   }
 }

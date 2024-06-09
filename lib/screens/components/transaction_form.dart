@@ -1,6 +1,10 @@
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
+import 'package:expenses_app/models/categories.dart';
+import 'package:expenses_app/models/transaction_categories.dart';
+import 'package:expenses_app/screens/components/category_form.dart';
 import 'package:expenses_app/utils/constants.dart';
+import 'package:expenses_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:omni_datetime_picker/omni_datetime_picker.dart';
@@ -30,6 +34,10 @@ class _TransactionFormState extends State<TransactionForm> {
   TransactionType _transactionType = TransactionType.debit;
   static String tempAmount = '';
   DateTime _transactionTime = DateTime.now();
+  List<Category> _categories = [];
+  Category? _category;
+  TransactionCategory? _transactionCategory;
+  bool _isCategoriesLoading = true;
 
   @override
   void initState() {
@@ -46,7 +54,10 @@ class _TransactionFormState extends State<TransactionForm> {
     // Clear the amount field if the form is reopened from dialog/bottom sheet
     if (!_isFullForm) {
       tempAmount = '';
+      _isCategoriesLoading = false;
     }
+
+    _getCategories();
 
     if (_accountTransaction != null) {
       _amountController.text = (_accountTransaction!.total / 100).toString();
@@ -65,32 +76,36 @@ class _TransactionFormState extends State<TransactionForm> {
   Widget build(BuildContext context) {
     return Form(
       key: _formKey,
-      child: Column(
+      child: ListView(
+        shrinkWrap: true,
         children: [
-          SegmentedButton<TransactionType>(
-            style: const ButtonStyle(
-              visualDensity: VisualDensity(vertical: 1),
+          Center(
+            child: SegmentedButton<TransactionType>(
+              showSelectedIcon: false,
+              style: const ButtonStyle(
+                visualDensity: VisualDensity(vertical: 1),
+              ),
+              segments: const <ButtonSegment<TransactionType>>[
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.debit,
+                  label: Text("Debit"),
+                  icon: Icon(Icons.remove_circle_outline),
+                ),
+                ButtonSegment<TransactionType>(
+                  value: TransactionType.credit,
+                  label: Text("Credit"),
+                  icon: Icon(Icons.add_circle_outline),
+                ),
+              ],
+              selected: <TransactionType>{_transactionType},
+              onSelectionChanged: (selection) {
+                setState(() {
+                  _transactionType = selection.first;
+                });
+              },
             ),
-            segments: const <ButtonSegment<TransactionType>>[
-              ButtonSegment<TransactionType>(
-                value: TransactionType.debit,
-                label: Text("Debit"),
-                icon: Icon(Icons.remove_circle_outline),
-              ),
-              ButtonSegment<TransactionType>(
-                value: TransactionType.credit,
-                label: Text("Credit"),
-                icon: Icon(Icons.add_circle_outline),
-              ),
-            ],
-            selected: <TransactionType>{_transactionType},
-            onSelectionChanged: (selection) {
-              setState(() {
-                _transactionType = selection.first;
-              });
-            },
           ),
-          if (_isFullForm) const SizedBox(height: 16),
+          if (_isFullForm) const SizedBox(height: 20),
           if (_isFullForm)
             TextFormField(
               controller: _titleController,
@@ -102,7 +117,7 @@ class _TransactionFormState extends State<TransactionForm> {
               ),
               keyboardType: TextInputType.text,
             ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           TextFormField(
             controller: _amountController,
             decoration: const InputDecoration(
@@ -123,7 +138,7 @@ class _TransactionFormState extends State<TransactionForm> {
             autofocus: true,
             onChanged: (value) => tempAmount = value,
           ),
-          if (_isFullForm) const SizedBox(height: 16),
+          if (_isFullForm) const SizedBox(height: 20),
           if (_isFullForm)
             TextFormField(
               decoration: const InputDecoration(
@@ -135,26 +150,34 @@ class _TransactionFormState extends State<TransactionForm> {
               readOnly: true,
               onTap: () => _showDatePicker(),
             ),
-          const SizedBox(height: 16),
-          ElevatedButton.icon(
-            icon: _getSaveIcon(),
-            onPressed: () {
-              bool isFormValid = _formKey.currentState!.validate();
-              if (isFormValid) {
-                _saveTransaction();
-              }
-            },
-            label: const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Save'),
+          if (_isFullForm) const SizedBox(height: 20),
+          if (_isFullForm)
+            Center(
+              child: _getCategoryDropdown(),
+            ),
+          const SizedBox(height: 24),
+          Center(
+            child: ElevatedButton.icon(
+              icon: _getSaveIcon(),
+              onPressed: () {
+                bool isFormValid = _formKey.currentState!.validate();
+                if (isFormValid) {
+                  _saveTransaction();
+                }
+              },
+              label: const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text('Save'),
+              ),
             ),
           ),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  _saveTransaction() {
+  _saveTransaction() async {
     setState(() {
       _isSaving = true;
     });
@@ -168,15 +191,25 @@ class _TransactionFormState extends State<TransactionForm> {
           _transactionType == TransactionType.credit ? 'credit' : 'debit';
       _accountTransaction!.transactionTime = _transactionTime;
 
-      DbHelper.instance.updateTransaction(_accountTransaction!);
+      await DbHelper.instance.updateTransaction(_accountTransaction!);
+      await DbHelper.instance.updateTransactionCategory(
+        _transactionCategory!.id,
+        _accountTransaction!.id,
+        _category!.id,
+      );
     } else {
-      DbHelper.instance.createTransaction(
+      int transactionId = await DbHelper.instance.createTransaction(
         1,
         _transactionType == TransactionType.credit ? 'Income' : 'Expense',
         null,
         (amount * 100).floor(),
         _transactionType == TransactionType.credit ? 'credit' : 'debit',
         _transactionTime,
+      );
+
+      await DbHelper.instance.createTransactionCategory(
+        transactionId,
+        _category!.id,
       );
     }
 
@@ -208,5 +241,141 @@ class _TransactionFormState extends State<TransactionForm> {
       _transactionTimeController.text =
           DateFormat(Constants.dateTimeFormat).format(_transactionTime);
     });
+  }
+
+  _getCategories() async {
+    _categories = await DbHelper.instance.getCategories();
+
+    if (_accountTransaction != null) {
+      _transactionCategory = await DbHelper.instance
+          .getTransactionCategory(_accountTransaction!.id);
+
+      if (_transactionCategory != null) {
+        _category = await DbHelper.instance
+            .getCategory(_transactionCategory!.categoryId);
+      } else {
+        // FIXME: Should set the category to default one, instead of hardcoding
+        // to 1
+        int transactionCategoryId =
+            await DbHelper.instance.createTransactionCategory(
+          _accountTransaction!.id,
+          1,
+        );
+
+        _transactionCategory = await DbHelper.instance
+            .getTransactionCategory(transactionCategoryId);
+      }
+    }
+
+    if (_transactionCategory == null) {
+      _category = _categories.where((item) => item.id == 1).first;
+    }
+
+    setState(() {
+      _isCategoriesLoading = false;
+    });
+  }
+
+  _getCategoryDropdown() {
+    if (_isCategoriesLoading) {
+      return Container();
+    }
+
+    return DropdownButtonFormField<Category>(
+      decoration: const InputDecoration(
+        prefixIcon: Icon(Icons.category),
+        border: OutlineInputBorder(),
+        labelText: 'Category',
+      ),
+      items: _getCategoryItems(),
+      onChanged: (category) => _onCategoryUpdated(category),
+      value: _category,
+    );
+  }
+
+  List<DropdownMenuItem<Category>> _getCategoryItems() {
+    List<DropdownMenuItem<Category>> items = [];
+    for (Category category in _categories) {
+      items.add(
+        DropdownMenuItem<Category>(
+          value: category,
+          child: Text(category.title),
+        ),
+      );
+    }
+
+    // Show dropdown to add new category
+    Category category = Category(id: -1, title: "Add new category");
+    items.add(
+      DropdownMenuItem<Category>(
+        value: category,
+        child: Text(category.title),
+      ),
+    );
+
+    return items;
+  }
+
+  _onCategoryUpdated(Category? category) async {
+    if (category != null && category.id == -1) {
+      Category? backup = _category;
+
+      setState(() {
+        _category = category;
+      });
+
+      Category? newCategory;
+      if (Utils.isLargeScreen(context)) {
+        newCategory = await showDialog(
+          context: context,
+          builder: (context) {
+            return Dialog(
+              child: Container(
+                margin: const EdgeInsets.all(16),
+                width: MediaQuery.of(context).size.width / 2,
+                height: MediaQuery.of(context).size.height * 3 / 4,
+                child: const CategoryForm(
+                  category: null,
+                ),
+              ),
+            );
+          },
+        );
+      } else {
+        newCategory = await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 3 / 4,
+              margin: const EdgeInsets.all(16),
+              child: const CategoryForm(
+                category: null,
+              ),
+            );
+          },
+        );
+      }
+
+      if (newCategory == null) {
+        setState(() {
+          _category = backup;
+        });
+        return;
+      }
+
+      setState(() {
+        _categories.add(newCategory!);
+
+        _category = newCategory;
+      });
+      return;
+    }
+
+    if (category != null) {
+      setState(() {
+        _category = category;
+      });
+    }
   }
 }

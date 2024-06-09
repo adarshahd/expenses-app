@@ -33,4 +33,12 @@ class Category {
     data['deleted_at'] = deletedAt;
     return data;
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is Category && id == other.id;
+  }
+
+  @override
+  int get hashCode => id.hashCode;
 }
