@@ -22,11 +22,12 @@ jobs:
       - name: Setup Key Store for application signing
         shell: bash
         run: |
-          echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > app/keystore.jks
           echo "keyAlias=upload" > key.properties
           echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
           echo "storeFile=keystore.jks" >> key.properties
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
+          ls app/
         working-directory: ./android
       - run: flutter build apk --target=lib/expenses.dart --split-per-abi
       - run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk Expenses-arm64-v8a-signed.apk
