@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
+import 'package:expenses_app/models/charts/category_map.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/screens/components/transaction_form.dart';
 import 'package:expenses_app/screens/transaction.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:expenses_app/utils/currency_formatter.dart';
 import 'package:expenses_app/utils/utils.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -25,6 +27,7 @@ class _DashboardState extends State<Dashboard> {
 
   late Currency _currency;
   List<AccountTransaction> _transactions = [];
+  List<CategoryMap> _chartData = [];
 
   @override
   void initState() {
@@ -95,8 +98,24 @@ class _DashboardState extends State<Dashboard> {
   }
 
   _getDashboardCharts() {
-    return const Center(
-      child: Text("Coming Soon !"),
+    return Row(
+      children: [
+        const SizedBox(width: 8),
+        Expanded(
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 0,
+                centerSpaceRadius: 40,
+                sections: _getChartSections(),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _getLegends(),
+      ],
     );
   }
 
@@ -149,6 +168,7 @@ class _DashboardState extends State<Dashboard> {
     }
 
     await _getTransactions();
+    await _getChartData();
     setState(() {});
   }
 
@@ -244,6 +264,7 @@ class _DashboardState extends State<Dashboard> {
     );
 
     await _getTransactions();
+    await _getChartData();
     setState(() {});
   }
 
@@ -252,10 +273,6 @@ class _DashboardState extends State<Dashboard> {
       return 0.0;
     }
     return MediaQuery.of(context).size.height / 3;
-  }
-
-  _getTransactions() async {
-    _transactions = await DbHelper.instance.getTransactions();
   }
 
   _initialize() async {
@@ -268,9 +285,62 @@ class _DashboardState extends State<Dashboard> {
     } else {
       _currency = Currency.from(json: jsonDecode(currencySetting.value));
     }
+    await _getChartData();
 
     setState(() {
       _isLoading = false;
     });
+  }
+
+  _getTransactions() async {
+    _transactions = await DbHelper.instance.getTransactions();
+  }
+
+  _getChartData() async {
+    _chartData = await DbHelper.instance.getChartData();
+  }
+
+  _getChartSections() {
+    List<PieChartSectionData> sections = [];
+    for (CategoryMap? item in _chartData) {
+      sections.add(
+        PieChartSectionData(
+          title: '${item!.percent}%',
+          value: item.percent!.toDouble(),
+          color: Color(item.color!).withOpacity(0.5),
+        ),
+      );
+    }
+
+    return sections;
+  }
+
+  _getLegends() {
+    List<Widget> legendItems = [];
+    for (CategoryMap? item in _chartData) {
+      legendItems.add(
+        Row(
+          children: [
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: Color(item!.color!).withOpacity(0.5),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(item.title!),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ...legendItems,
+      ],
+    );
   }
 }

@@ -5,11 +5,14 @@ import 'package:expenses_app/db/migrations.dart';
 import 'package:expenses_app/models/account_transaction.dart';
 import 'package:expenses_app/models/accounts.dart';
 import 'package:expenses_app/models/categories.dart';
+import 'package:expenses_app/models/charts/category_map.dart';
+import 'package:expenses_app/models/charts/transaction_total.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/models/transaction_categories.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:math';
 
 class DbHelper {
   static final DbHelper _instance = DbHelper._();
@@ -313,5 +316,27 @@ class DbHelper {
     );
 
     return transactionCategoryId;
+  }
+
+  Future<List<CategoryMap>> getChartData() async {
+    Database? db = await databaseFactory.openDatabase(_dbPath!);
+    var transactionTotalResult = await db.rawQuery(
+        "select sum(total) as total from account_transactions where type='debit' and deleted_at is null");
+    TransactionTotal transactionTotal = transactionTotalResult
+        .map((item) => TransactionTotal.fromJson(item))
+        .first;
+
+    var categorywiseResult = await db.rawQuery(
+        "select c.title, sum(a.total) as total from transaction_categories as tc inner join account_transactions as a on tc.account_transaction_id = a.id inner join categories as c on tc.category_id = c.id where a.type='debit' and a.deleted_at is null and tc.deleted_at is null group by c.title order by total DESC");
+    List<CategoryMap> map =
+        categorywiseResult.map((item) => CategoryMap.fromJson(item)).toList();
+
+    map = map.map((item) {
+      item.percent = (item.total! * 100 / transactionTotal.total!).round();
+      item.color = (Random().nextDouble() * 0xFFFFFF).toInt();
+      return item;
+    }).toList();
+
+    return map;
   }
 }

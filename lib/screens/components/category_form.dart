@@ -12,7 +12,6 @@ class CategoryForm extends StatefulWidget {
 }
 
 class _CategoryFormState extends State<CategoryForm> {
-  late final Category? _category;
   final GlobalKey<FormState> _categoryFormKey = GlobalKey();
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -21,8 +20,6 @@ class _CategoryFormState extends State<CategoryForm> {
   @override
   void initState() {
     super.initState();
-
-    _category = widget.category;
   }
 
   @override
