@@ -11,10 +11,15 @@ android_build:
   tags:
     - amd64
   before_script:
+    - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - echo "flutter.targetSdkVersion=34" > android/local.properties
     - echo "flutter.compileSdkVersion=34" >> android/local.properties
+    - echo "keyAlias=upload" > android/key.properties
+    - echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
+    - echo "storeFile=./.secure_files/upload-keystore.jks" >> android/key.properties
+    - echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
   script:
-    - flutter build apk --target=lib/expenses.dart
+    - flutter build apk --target=lib/expenses.dart --split-per-abi
   cache:
     key:
       files:

@@ -16,15 +16,24 @@ jobs:
           channel: stable
           flutter-version: 3.22.0
           cache: true
-      - run: flutter config --no-analytics
       - run: flutter config --no-cli-animations
+      - run: flutter config --no-analytics
       - run: flutter pub get
+      - name: Setup Key Store for application signing
+        shell: bash
+        run: |
+          echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks
+          echo "keyAlias=upload" > key.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
+          echo "storeFile=keystore.jks" >> key.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
+        working-directory: ./android
       - run: flutter build apk --target=lib/expenses.dart --split-per-abi
-      - run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk Expenses-arm64-v8a.apk
+      - run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk Expenses-arm64-v8a-signed.apk
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "Expenses-arm64-v8a.apk"
+          artifacts: "Expenses-arm64-v8a-signed.apk"
           tag: ${{ github.ref_name }}
           prerelease: true
           allowUpdates: true
