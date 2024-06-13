@@ -6,6 +6,12 @@ stages:
   - test
   - quality
 
+before_script:
+  - GRADLE_USER_HOME="$(pwd)/.gradle"
+  - export GRADLE_USER_HOME
+  - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
+  - export PATH="$PATH":"$PUB_CACHE/bin"
+
 android_build:
   stage: build
   tags:
@@ -28,7 +34,7 @@ android_build:
     paths:
       - build
       - android/.gradle
-      - ~/.gradle
+      - ".gradle"
     policy: pull-push
 
 test:
