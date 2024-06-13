@@ -85,6 +85,7 @@ class Migrations {
         "id"	INTEGER NOT NULL,
         "title"	TEXT NOT NULL,
         "description"	TEXT,
+        "color" INTEGER,
         "created_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
         "updated_at"	TEXT DEFAULT CURRENT_TIMESTAMP,
         "deleted_at"	TEXT,

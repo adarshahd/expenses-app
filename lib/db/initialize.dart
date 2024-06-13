@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
@@ -50,6 +51,7 @@ class Initialize {
       _dbHelper.createCategory(
         'Others',
         'Default Category',
+        (Random().nextDouble() * 0xFFFFFF).toInt(),
       );
 
       _dbHelper.createOrUpdateSetting(

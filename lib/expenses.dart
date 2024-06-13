@@ -67,6 +67,7 @@ class _ExpensesState extends State<Expenses> {
     return Consumer<AppStateNotifier>(
       builder: (context, value, child) {
         return MaterialApp(
+          title: "Expenses",
           routes: routes,
           home: _getHome(context),
           theme: _getTheme(value),

@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/categories.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class CategoryForm extends StatefulWidget {
   final Category? category;
@@ -16,6 +19,7 @@ class _CategoryFormState extends State<CategoryForm> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   bool _isSaving = false;
+  int _categoryColor = (Random().nextDouble() * 0xFFFFFF).toInt();
 
   @override
   void initState() {
@@ -61,6 +65,22 @@ class _CategoryFormState extends State<CategoryForm> {
             maxLines: 8,
             keyboardType: TextInputType.text,
           ),
+          const SizedBox(height: 20),
+          ListTile(
+            title: Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                      color: Color(_categoryColor).withOpacity(0.6)),
+                ),
+                const SizedBox(width: 16),
+                const Text('Chose color')
+              ],
+            ),
+            onTap: () => _showColorPicker(),
+          ),
           const SizedBox(height: 32),
           Center(
             child: ElevatedButton.icon(
@@ -95,6 +115,7 @@ class _CategoryFormState extends State<CategoryForm> {
     int categoryId = await DbHelper.instance.createCategory(
       _titleController.text.toString(),
       _descriptionController.text.toString(),
+      _categoryColor,
     );
     Category? category = await DbHelper.instance.getCategory(categoryId);
 
@@ -110,5 +131,30 @@ class _CategoryFormState extends State<CategoryForm> {
       return const CircularProgressIndicator();
     }
     return const Icon(Icons.check_circle_outline);
+  }
+
+  _showColorPicker() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Chose category color'),
+        content: SingleChildScrollView(
+          child: ColorPicker(
+            pickerColor: Color(_categoryColor).withOpacity(0.5),
+            onColorChanged: (newColor) {
+              setState(() {
+                _categoryColor = int.parse('0xff${newColor.toHexString()}');
+              });
+            },
+          ),
+        ),
+        actions: [
+          ElevatedButton.icon(
+            label: const Text("Select"),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
   }
 }

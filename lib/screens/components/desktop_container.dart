@@ -36,13 +36,13 @@ class _DesktopContainerState extends State<DesktopContainer> {
       elevation: 8,
       child: ListView(
         children: [
-          const SizedBox(height: 8),
+          const SizedBox(height: 48),
           Text(
-            "Expense Manager",
+            "Expenses",
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 48),
           ListTile(
             title: const Text("Dashboard"),
             leading: const Icon(Icons.home),

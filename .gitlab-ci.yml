@@ -28,6 +28,7 @@ android_build:
     paths:
       - build
       - android/.gradle
+      - ~/.gradle
     policy: pull-push
 
 test:

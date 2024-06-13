@@ -239,7 +239,8 @@ class DbHelper {
     return category;
   }
 
-  Future<int> createCategory(String title, String description) async {
+  Future<int> createCategory(
+      String title, String description, int color) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
     int id = await db.insert(
@@ -320,20 +321,28 @@ class DbHelper {
 
   Future<List<CategoryMap>> getChartData() async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
-    var transactionTotalResult = await db.rawQuery(
-        "select sum(total) as total from account_transactions where type='debit' and deleted_at is null");
+    var transactionTotalResult = await db.rawQuery("""
+      select sum(total) as total from account_transactions
+      where type='debit' and deleted_at is null
+    """);
+
     TransactionTotal transactionTotal = transactionTotalResult
         .map((item) => TransactionTotal.fromJson(item))
         .first;
 
-    var categorywiseResult = await db.rawQuery(
-        "select c.title, sum(a.total) as total from transaction_categories as tc inner join account_transactions as a on tc.account_transaction_id = a.id inner join categories as c on tc.category_id = c.id where a.type='debit' and a.deleted_at is null and tc.deleted_at is null group by c.title order by total DESC");
+    var categorywiseResult = await db.rawQuery("""
+      select c.title, sum(a.total) as total, c.color from transaction_categories as tc
+      inner join account_transactions as a on tc.account_transaction_id = a.id
+      inner join categories as c on tc.category_id = c.id
+      where a.type='debit' and a.deleted_at is null and tc.deleted_at is null
+      group by c.title order by total DESC
+    """);
+
     List<CategoryMap> map =
         categorywiseResult.map((item) => CategoryMap.fromJson(item)).toList();
 
     map = map.map((item) {
       item.percent = (item.total! * 100 / transactionTotal.total!).round();
-      item.color = (Random().nextDouble() * 0xFFFFFF).toInt();
       return item;
     }).toList();
 

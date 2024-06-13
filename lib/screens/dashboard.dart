@@ -99,21 +99,20 @@ class _DashboardState extends State<Dashboard> {
 
   _getDashboardCharts() {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const SizedBox(width: 8),
-        Expanded(
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: PieChart(
-              PieChartData(
-                sectionsSpace: 0,
-                centerSpaceRadius: 40,
-                sections: _getChartSections(),
-              ),
+        AspectRatio(
+          aspectRatio: 1,
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 4,
+              centerSpaceRadius: Utils.isLargeScreen(context) ? 72 : 48,
+              sections: _getChartSections(),
             ),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 24),
         _getLegends(),
       ],
     );
@@ -305,9 +304,10 @@ class _DashboardState extends State<Dashboard> {
     for (CategoryMap? item in _chartData) {
       sections.add(
         PieChartSectionData(
+          radius: 64,
           title: '${item!.percent}%',
           value: item.percent!.toDouble(),
-          color: Color(item.color!).withOpacity(0.5),
+          color: Color(item.color!).withOpacity(0.6),
         ),
       );
     }
@@ -336,7 +336,7 @@ class _DashboardState extends State<Dashboard> {
     }
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ...legendItems,
