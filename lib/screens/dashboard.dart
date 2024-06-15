@@ -102,17 +102,16 @@ class _DashboardState extends State<Dashboard> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const SizedBox(width: 8),
-        AspectRatio(
-          aspectRatio: 1,
+        Expanded(
           child: PieChart(
             PieChartData(
-              sectionsSpace: 4,
-              centerSpaceRadius: Utils.isLargeScreen(context) ? 72 : 48,
+              sectionsSpace: 2,
+              centerSpaceRadius: Utils.isLargeScreen(context) ? 72 : 32,
               sections: _getChartSections(),
             ),
           ),
         ),
-        const SizedBox(width: 24),
+        const SizedBox(width: 8),
         _getLegends(),
       ],
     );
@@ -304,7 +303,7 @@ class _DashboardState extends State<Dashboard> {
     for (CategoryMap? item in _chartData) {
       sections.add(
         PieChartSectionData(
-          radius: 64,
+          radius: Utils.isLargeScreen(context) ? 72 : 48,
           title: '${item!.percent}%',
           value: item.percent!.toDouble(),
           color: Color(item.color!).withOpacity(0.6),

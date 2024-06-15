@@ -2,6 +2,7 @@ class Category {
   late int id;
   late String title;
   String? description;
+  late int color;
   DateTime? createdAt;
   DateTime? updatedAt;
   DateTime? deletedAt;
@@ -18,6 +19,7 @@ class Category {
     id = json['id'];
     title = json['title'];
     description = json['description'];
+    color = json['color'];
     createdAt = DateTime.tryParse(json['created_at']);
     updatedAt = DateTime.tryParse(json['updated_at']);
     deletedAt = DateTime.tryParse(json['deleted_at'] ?? '');
@@ -28,6 +30,7 @@ class Category {
     data['id'] = id;
     data['title'] = title;
     data['description'] = description;
+    data['color'] = color;
     data['created_at'] = createdAt;
     data['updated_at'] = updatedAt;
     data['deleted_at'] = deletedAt;

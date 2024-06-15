@@ -267,6 +267,8 @@ class _TransactionFormState extends State<TransactionForm> {
       }
     }
 
+    // FIXME: Should set the category to default one, instead of hardcoding
+    // to 1
     if (_transactionCategory == null) {
       _category = _categories.where((item) => item.id == 1).first;
     }

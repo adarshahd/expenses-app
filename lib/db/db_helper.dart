@@ -12,7 +12,6 @@ import 'package:expenses_app/models/transaction_categories.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'dart:math';
 
 class DbHelper {
   static final DbHelper _instance = DbHelper._();
@@ -248,6 +247,7 @@ class DbHelper {
       {
         'title': title,
         'description': description,
+        'color': color,
       },
     );
 
@@ -255,7 +255,7 @@ class DbHelper {
   }
 
   Future<int> updateCategory(
-      int categoryId, String title, String description) async {
+      int categoryId, String title, String description, int color) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
     int id = await db.update(
@@ -263,6 +263,7 @@ class DbHelper {
       {
         'title': title,
         'description': description,
+        'color': color,
       },
       where: 'id = ?',
       whereArgs: [categoryId],
