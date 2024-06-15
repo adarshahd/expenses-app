@@ -35,6 +35,7 @@ android_build:
       - build
       - android/.gradle
       - .gradle
+      - .pub-cache
     policy: pull-push
 
 test:
