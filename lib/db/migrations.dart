@@ -8,14 +8,14 @@ class Migrations {
   }
 
   Future<void> run() async {
-    _createAccountsTable();
-    _createAccountTransactionsTable();
-    _createAccountTransfersTabel();
-    _createCategoriesTable();
-    _createTrasactionCategoriesTable();
-    _createTagsTable();
-    _createTransactionTagsTable();
-    _createSettingsTable();
+    await _createAccountsTable();
+    await _createAccountTransactionsTable();
+    await _createAccountTransfersTabel();
+    await _createCategoriesTable();
+    await _createTrasactionCategoriesTable();
+    await _createTagsTable();
+    await _createTransactionTagsTable();
+    await _createSettingsTable();
   }
 
   Future<void> _createAccountsTable() async {

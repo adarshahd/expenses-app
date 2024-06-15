@@ -6,17 +6,15 @@ stages:
   - test
   - quality
 
-before_script:
-  - GRADLE_USER_HOME="$(pwd)/.gradle"
-  - export GRADLE_USER_HOME
-  - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
-  - export PATH="$PATH":"$PUB_CACHE/bin"
-
 android_build:
   stage: build
   tags:
     - amd64
   before_script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
+    - export PATH="$PATH":"$PUB_CACHE/bin"
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - echo "flutter.targetSdkVersion=34" > android/local.properties
     - echo "flutter.compileSdkVersion=34" >> android/local.properties
@@ -26,7 +24,8 @@ android_build:
     - echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
   script:
     - flutter build apk --target=lib/expenses.dart --split-per-abi
-    - ls -lh
+    - ls -lha
+    - echo $PATH
   cache:
     key:
       files:
@@ -43,6 +42,10 @@ test:
   tags:
     - amd64
   before_script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
+    - export PATH="$PATH":"$PUB_CACHE/bin"
     - flutter pub global activate junitreport
   script:
     - flutter test --machine --coverage | tojunit -o report.xml
@@ -61,6 +64,10 @@ code_quality:
   tags:
     - amd64
   before_script:
+    - GRADLE_USER_HOME="$(pwd)/.gradle"
+    - export GRADLE_USER_HOME
+    - export PUB_CACHE=$CI_PROJECT_DIR/.pub-cache
+    - export PATH="$PATH":"$PUB_CACHE/bin"
     - flutter pub global activate dart_code_metrics
   script:
     - metrics lib -r codeclimate  > gl-code-quality-report.json
