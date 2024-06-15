@@ -26,6 +26,7 @@ android_build:
     - echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
   script:
     - flutter build apk --target=lib/expenses.dart --split-per-abi
+    - ls -lh
   cache:
     key:
       files:
@@ -34,14 +35,15 @@ android_build:
     paths:
       - build
       - android/.gradle
-      - ".gradle"
+      - .gradle
     policy: pull-push
 
 test:
   stage: test
+  tags:
+    - amd64
   before_script:
     - flutter pub global activate junitreport
-    - export PATH="$PATH:$HOME/.pub-cache/bin"
   script:
     - flutter test --machine --coverage | tojunit -o report.xml
     - lcov --summary coverage/lcov.info
@@ -56,9 +58,10 @@ test:
 
 code_quality:
   stage: quality
+  tags:
+    - amd64
   before_script:
     - flutter pub global activate dart_code_metrics
-    - export PATH="$PATH:$HOME/.pub-cache/bin"
   script:
     - metrics lib -r codeclimate  > gl-code-quality-report.json
   artifacts:
