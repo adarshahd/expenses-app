@@ -125,6 +125,19 @@ class DbHelper {
     return id;
   }
 
+  Future<Account?> getAccount(int accountId) async {
+    Database? db = await databaseFactory.openDatabase(_dbPath!);
+    var result = await db.query(
+      'accounts',
+      where: 'id = ?1',
+      whereArgs: [accountId],
+    );
+
+    Account? account = result.map((item) => Account.fromJson(item)).firstOrNull;
+
+    return account;
+  }
+
   Future<List<AccountTransaction>> getTransactions() async {
     List<AccountTransaction> transactionList;
     Database? db = await databaseFactory.openDatabase(_dbPath!);
@@ -258,7 +271,7 @@ class DbHelper {
       int categoryId, String title, String description, int color) async {
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
-    int id = await db.update(
+    await db.update(
       'categories',
       {
         'title': title,
@@ -269,7 +282,7 @@ class DbHelper {
       whereArgs: [categoryId],
     );
 
-    return id;
+    return categoryId;
   }
 
   Future<TransactionCategory?> getTransactionCategory(int txnId) async {
