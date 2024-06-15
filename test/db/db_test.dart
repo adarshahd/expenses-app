@@ -33,7 +33,7 @@ void main() {
       await DbHelper.instance.initialize();
 
       // Test if default account created
-      List<Account> accounts = await DbHelper.instance.geAccounts();
+      List<Account> accounts = await DbHelper.instance.getAccounts();
       expect(accounts.isNotEmpty, isTrue);
 
       // Test if default category created

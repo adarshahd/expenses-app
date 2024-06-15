@@ -98,7 +98,7 @@ class DbHelper {
     }
   }
 
-  Future<List<Account>> geAccounts() async {
+  Future<List<Account>> getAccounts() async {
     List<Account> accounts;
     Database? db = await databaseFactory.openDatabase(_dbPath!);
 
