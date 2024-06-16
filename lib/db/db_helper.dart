@@ -41,10 +41,10 @@ class DbHelper {
     await Initialize(dbPath: _dbPath!).run();
   }
 
-  Future<void> clearDatabase() async {
-    File.fromUri(Uri.file(_dbPath!)).deleteSync();
-    initialize();
-  }
+  // Future<void> clearDatabase() async {
+  //   File(_dbPath!).deleteSync();
+  //   initialize();
+  // }
 
   Future<List<Setting>> getSettings() async {
     List<Setting> settings;

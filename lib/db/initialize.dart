@@ -26,8 +26,7 @@ class Initialize {
       Constants.settingDefaultAccountCreated,
     );
 
-    if (defaultAccountCreated == null ||
-        !bool.parse(defaultAccountCreated.value)) {
+    if (defaultAccountCreated == null) {
       _dbHelper.createAccount(
         'Default',
         'Default account',
@@ -46,8 +45,7 @@ class Initialize {
       Constants.settingDefaultCategoriesCreated,
     );
 
-    if (defaultCategoriesCreated == null ||
-        !bool.parse(defaultCategoriesCreated.value)) {
+    if (defaultCategoriesCreated == null) {
       _dbHelper.createCategory(
         'Others',
         'Default Category',
@@ -66,8 +64,7 @@ class Initialize {
       Constants.settingThemeModeSet,
     );
 
-    if (defaultApplicationThemeModeSet == null ||
-        !bool.parse(defaultApplicationThemeModeSet.value)) {
+    if (defaultApplicationThemeModeSet == null) {
       _dbHelper.createOrUpdateSetting(
         Constants.settingApplicationThemeMode,
         false,
@@ -85,8 +82,7 @@ class Initialize {
       Constants.settingDefaultCurrencySet,
     );
 
-    if (defaultApplicationCurrencySet == null ||
-        !bool.parse(defaultApplicationCurrencySet.value)) {
+    if (defaultApplicationCurrencySet == null) {
       Currency? currencyINR = CurrencyService().findByCode("INR");
 
       _dbHelper.createOrUpdateSetting(
