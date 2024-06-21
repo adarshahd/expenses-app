@@ -144,7 +144,7 @@ class DbHelper {
     var result = await db.query(
       'account_transactions',
       where: 'deleted_at IS NULL',
-      orderBy: 'id desc',
+      orderBy: 'datetime(transaction_time) desc',
     );
 
     transactionList =
@@ -159,7 +159,7 @@ class DbHelper {
       'account_transactions',
       where: 'account_id = ?1 AND deleted_at IS NULL',
       whereArgs: [accountId],
-      orderBy: 'id desc',
+      orderBy: 'datetime(transaction_time) desc',
     );
 
     transactionList =

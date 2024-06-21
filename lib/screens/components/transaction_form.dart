@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
 import 'package:expenses_app/models/account_transaction.dart';
 import 'package:expenses_app/models/categories.dart';
@@ -38,12 +41,21 @@ class _TransactionFormState extends State<TransactionForm> {
   Category? _category;
   TransactionCategory? _transactionCategory;
   bool _isCategoriesLoading = true;
+  Currency? _applicationCurrency;
 
   @override
   void initState() {
     super.initState();
     _accountTransaction = widget.accountTransaction;
     _isFullForm = widget.isFullForm;
+
+    DbHelper.instance
+        .getSetting(Constants.settingApplicationCurrency)
+        .then((setting) {
+      setState(() {
+        _applicationCurrency = Currency.from(json: jsonDecode(setting!.value));
+      });
+    });
 
     // If we have amount entered in the dialog/bottom sheet, populate the same
     // in the full form
@@ -120,9 +132,9 @@ class _TransactionFormState extends State<TransactionForm> {
           const SizedBox(height: 20),
           TextFormField(
             controller: _amountController,
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.money_outlined),
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              prefixIcon: _getAmountPrefixIcon(),
+              border: const OutlineInputBorder(),
               hintText: 'Amount',
               labelText: 'Transaction amount',
             ),
@@ -234,6 +246,10 @@ class _TransactionFormState extends State<TransactionForm> {
       context: context,
       borderRadius: const BorderRadius.all(Radius.zero),
       initialDate: _transactionTime,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 2 / 3,
+        maxWidth: MediaQuery.of(context).size.width / 2,
+      ),
     );
 
     setState(() {
@@ -379,5 +395,26 @@ class _TransactionFormState extends State<TransactionForm> {
         _category = category;
       });
     }
+  }
+
+  _getAmountPrefixIcon() {
+    if (_applicationCurrency == null ||
+        _applicationCurrency!.symbol.length > 2) {
+      return const Icon(Icons.money_outlined);
+    }
+
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: Center(
+        child: Text(
+          _applicationCurrency!.symbol,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+          ),
+        ),
+      ),
+    );
   }
 }

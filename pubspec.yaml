@@ -46,7 +46,7 @@ dependencies:
   currency_picker: ^2.0.21
   shared_preferences: ^2.2.3
   introduction_screen: ^3.1.14
-  omni_datetime_picker: ^1.1.0
+  omni_datetime_picker: ^2.0.0
   flutter_colorpicker: ^1.1.0
 
 dev_dependencies:
