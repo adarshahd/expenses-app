@@ -244,7 +244,7 @@ class _TransactionFormState extends State<TransactionForm> {
   _showDatePicker() async {
     DateTime? dateTime = await showOmniDateTimePicker(
       context: context,
-      borderRadius: const BorderRadius.all(Radius.zero),
+      borderRadius: const BorderRadius.all(Radius.circular(16)),
       initialDate: _transactionTime,
       constraints: BoxConstraints(
         maxHeight: MediaQuery.of(context).size.height * 2 / 3,
