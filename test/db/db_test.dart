@@ -12,6 +12,7 @@ import 'package:expenses_app/models/transaction_categories.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -23,6 +24,8 @@ void main() {
           (MethodCall methodCall) async {
     return '.';
   });
+
+  SharedPreferences.setMockInitialValues({});
 
   sqfliteFfiInit();
 
