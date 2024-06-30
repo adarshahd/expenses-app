@@ -12,6 +12,7 @@ class Constants {
 
   static const String prefTxnTempAmount = "transaction_temp_amount";
   static const String prefIsFirstRun = "is_first_run";
+  static const String prefDbFileLocation = "db_file_location";
 
   static const String dateTimeFormat = 'dd MMM, hh:mm a';
 }

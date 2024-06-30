@@ -9,8 +9,10 @@ import 'package:expenses_app/models/charts/category_map.dart';
 import 'package:expenses_app/models/charts/transaction_total.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/models/transaction_categories.dart';
+import 'package:expenses_app/utils/constants.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 class DbHelper {
@@ -27,7 +29,14 @@ class DbHelper {
   String? _dbPath;
 
   Future<void> initialize() async {
-    Directory appDocumentsDir = await getApplicationDocumentsDirectory();
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String? directory = preferences.getString(Constants.prefDbFileLocation);
+    Directory appDocumentsDir;
+    if (directory != null) {
+      appDocumentsDir = Directory(directory);
+    } else {
+      appDocumentsDir = await getApplicationDocumentsDirectory();
+    }
     _dbPath = p.join(appDocumentsDir.path, "databases", dbName);
 
     /**

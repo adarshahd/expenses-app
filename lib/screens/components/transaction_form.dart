@@ -91,32 +91,33 @@ class _TransactionFormState extends State<TransactionForm> {
       child: ListView(
         shrinkWrap: true,
         children: [
-          Center(
-            child: SegmentedButton<TransactionType>(
-              showSelectedIcon: false,
-              style: const ButtonStyle(
-                visualDensity: VisualDensity(vertical: 1),
+          if (_isFullForm)
+            Center(
+              child: SegmentedButton<TransactionType>(
+                showSelectedIcon: false,
+                style: const ButtonStyle(
+                  visualDensity: VisualDensity(vertical: 1),
+                ),
+                segments: const <ButtonSegment<TransactionType>>[
+                  ButtonSegment<TransactionType>(
+                    value: TransactionType.debit,
+                    label: Text("Debit"),
+                    icon: Icon(Icons.remove_circle_outline),
+                  ),
+                  ButtonSegment<TransactionType>(
+                    value: TransactionType.credit,
+                    label: Text("Credit"),
+                    icon: Icon(Icons.add_circle_outline),
+                  ),
+                ],
+                selected: <TransactionType>{_transactionType},
+                onSelectionChanged: (selection) {
+                  setState(() {
+                    _transactionType = selection.first;
+                  });
+                },
               ),
-              segments: const <ButtonSegment<TransactionType>>[
-                ButtonSegment<TransactionType>(
-                  value: TransactionType.debit,
-                  label: Text("Debit"),
-                  icon: Icon(Icons.remove_circle_outline),
-                ),
-                ButtonSegment<TransactionType>(
-                  value: TransactionType.credit,
-                  label: Text("Credit"),
-                  icon: Icon(Icons.add_circle_outline),
-                ),
-              ],
-              selected: <TransactionType>{_transactionType},
-              onSelectionChanged: (selection) {
-                setState(() {
-                  _transactionType = selection.first;
-                });
-              },
             ),
-          ),
           if (_isFullForm) const SizedBox(height: 20),
           if (_isFullForm)
             TextFormField(
