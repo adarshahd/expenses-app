@@ -13,7 +13,6 @@ import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -26,10 +25,6 @@ void main() {
   });
 
   SharedPreferences.setMockInitialValues({});
-
-  sqfliteFfiInit();
-
-  databaseFactory = databaseFactoryFfiNoIsolate;
 
   group("DB Tester", () {
     test('Initialization test', () async {

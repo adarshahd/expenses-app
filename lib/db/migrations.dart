@@ -1,10 +1,14 @@
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'dart:io';
+
+import 'package:sqlite3/sqlite3.dart';
 
 class Migrations {
   late final String _dbPath;
+  late final bool _isURI;
 
-  Migrations({required String dbPath}) {
+  Migrations({required String dbPath, required bool isURI}) {
     _dbPath = dbPath;
+    _isURI = isURI;
   }
 
   Future<void> run() async {
@@ -19,7 +23,7 @@ class Migrations {
   }
 
   Future<void> _createAccountsTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "accounts" (
         "id"	INTEGER NOT NULL,
@@ -39,7 +43,7 @@ class Migrations {
   }
 
   Future<void> _createAccountTransactionsTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "account_transactions" (
         "id"	INTEGER NOT NULL,
@@ -59,7 +63,7 @@ class Migrations {
   }
 
   Future<void> _createAccountTransfersTabel() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "account_transfers" (
         "id"	INTEGER NOT NULL,
@@ -79,7 +83,7 @@ class Migrations {
   }
 
   Future<void> _createCategoriesTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "categories" (
         "id"	INTEGER NOT NULL,
@@ -95,7 +99,7 @@ class Migrations {
   }
 
   Future<void> _createTrasactionCategoriesTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "transaction_categories" (
         "id"	INTEGER NOT NULL,
@@ -112,7 +116,7 @@ class Migrations {
   }
 
   Future<void> _createTagsTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "tags" (
         "id"	INTEGER NOT NULL,
@@ -128,7 +132,7 @@ class Migrations {
   }
 
   Future<void> _createTransactionTagsTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "transaction_tags" (
         "id"	INTEGER NOT NULL,
@@ -145,7 +149,7 @@ class Migrations {
   }
 
   Future<void> _createSettingsTable() async {
-    Database db = await databaseFactory.openDatabase(_dbPath);
+    Database db = sqlite3.open(_dbPath, uri: _isURI);
     db.execute('''
       CREATE TABLE IF NOT EXISTS "settings" (
         "id"	INTEGER NOT NULL,

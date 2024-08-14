@@ -6,15 +6,10 @@ import 'package:expenses_app/screens/settings.dart';
 import 'package:expenses_app/utils/app_state_notifier.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-
-  sqfliteFfiInit();
-
-  databaseFactory = databaseFactoryFfi;
 
   // Initialize database
   DbHelper.instance;

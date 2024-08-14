@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
@@ -7,6 +8,7 @@ import 'package:expenses_app/utils/app_state_notifier.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_file_dialog/flutter_file_dialog.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -147,9 +149,15 @@ class _SettingsState extends State<Settings> {
   }
 
   _showFilePicker() async {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Chose data location',
-    );
+    String? selectedDirectory;
+    if (Platform.isAndroid) {
+      DirectoryLocation? pickedDirectory = await FlutterFileDialog.pickDirectory();
+      selectedDirectory = pickedDirectory.toString();
+    } else {
+      selectedDirectory = await FilePicker.platform.getDirectoryPath(
+        dialogTitle: 'Chose data location',
+      );
+    }
 
     if (selectedDirectory != null && context.mounted) {
       bool shouldReload = await showDialog(
