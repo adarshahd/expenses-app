@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:currency_picker/currency_picker.dart';
 import 'package:expenses_app/db/db_helper.dart';
@@ -7,7 +8,7 @@ import 'package:expenses_app/utils/app_state_notifier.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -19,10 +20,12 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
+  static const MethodChannel _channel = MethodChannel("io.gthink.expenses/file_operations");
+
   late Currency _currency;
   bool _isLoading = true;
   late SharedPreferences _preferences;
-  String? _applicationDatabaseDirectory;
+  String? _customPath;
 
   @override
   void initState() {
@@ -42,18 +45,21 @@ class _SettingsState extends State<Settings> {
 
     SharedPreferences.getInstance().then((preferences) {
       _preferences = preferences;
-      _applicationDatabaseDirectory =
-          preferences.getString(Constants.prefDbFileLocation);
-      if (_applicationDatabaseDirectory == null) {
-        getApplicationDocumentsDirectory().then((directory) {
-          _applicationDatabaseDirectory = directory.path;
-        });
-      }
+      _customPath = preferences.getString(Constants.prefDbFileLocation);
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    String? directoryString = '';
+    if (_customPath != null) {
+      String customPath = '${_customPath!.substring(0, 30)}...';
+      directoryString =
+          'Custom location can result in performance degrade. Click and hold to reset. \n$customPath';
+    } else {
+      directoryString = 'Custom location can result in performance degrade.';
+    }
+
     return SafeArea(
       child: Scaffold(
         body: Container(
@@ -110,9 +116,12 @@ class _SettingsState extends State<Settings> {
               Card(
                 child: ListTile(
                   title: const Text('Database File Location'),
-                  subtitle: Text(_applicationDatabaseDirectory ?? ''),
+                  subtitle: Text(directoryString),
+                  isThreeLine: true,
                   leading: const Icon(Icons.storage_rounded),
                   onTap: () => _showFilePicker(),
+                  onLongPress:
+                      _customPath == null ? () => {} : () => _showResetDialog(),
                 ),
               ),
               const SizedBox(height: 8),
@@ -147,11 +156,18 @@ class _SettingsState extends State<Settings> {
   }
 
   _showFilePicker() async {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath(
-      dialogTitle: 'Chose data location',
-    );
+    String? selectedFile;
+    if(!Platform.isAndroid) {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        dialogTitle: 'Expenses storage location',
+      );
 
-    if (selectedDirectory != null && context.mounted) {
+      selectedFile = result?.files.single.path;
+    } else {
+      selectedFile = await _channel.invokeMethod("pick_file");
+    }
+
+    if (selectedFile != null && context.mounted) {
       bool shouldReload = await showDialog(
         context: context,
         builder: (context) {
@@ -177,14 +193,47 @@ class _SettingsState extends State<Settings> {
 
       if (shouldReload) {
         await _preferences.setString(
-            Constants.prefDbFileLocation, selectedDirectory);
+            Constants.prefDbFileLocation, selectedFile);
 
         await DbHelper.instance.initialize();
 
         setState(() {
-          _applicationDatabaseDirectory = selectedDirectory;
+          _customPath = selectedFile;
         });
       }
+    }
+  }
+
+  _showResetDialog() async {
+    bool shouldReset = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Confirm Database path reset'),
+          content: const Text(
+            '''Database path will be reset back to default path.,
+              Are you sure ?''',
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Ok'),
+            )
+          ],
+        );
+      },
+    );
+
+    if (shouldReset) {
+      await _preferences.remove(Constants.prefDbFileLocation);
+
+      setState(() {
+        _customPath = null;
+      });
     }
   }
 }

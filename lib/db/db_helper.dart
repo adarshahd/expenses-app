@@ -10,6 +10,7 @@ import 'package:expenses_app/models/charts/transaction_total.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/models/transaction_categories.dart';
 import 'package:expenses_app/utils/constants.dart';
+import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,26 +19,34 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 class DbHelper {
   static final DbHelper _instance = DbHelper._();
 
+  static const MethodChannel _channel = MethodChannel("io.gthink.expenses/file_operations");
+
   DbHelper._() {}
 
   static DbHelper get instance => _instance;
 
-  final dbName = "expenses.db";
+  static const dbName = "expenses.db";
 
   final dbVersion = "1.0";
 
   String? _dbPath;
 
+  String? _customPath;
+
   Future<void> initialize() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
-    String? directory = preferences.getString(Constants.prefDbFileLocation);
-    Directory appDocumentsDir;
-    if (directory != null) {
-      appDocumentsDir = Directory(directory);
-    } else {
-      appDocumentsDir = await getApplicationDocumentsDirectory();
+    _customPath = preferences.getString(Constants.prefDbFileLocation);
+    Directory appDocumentsDir = await getApplicationDocumentsDirectory();
+
+    _dbPath = p.join(appDocumentsDir.path, '', dbName);
+
+    if (_customPath != null) {
+      if(Platform.isAndroid) {
+        await _syncDatabaseFile(false);
+      } else {
+        _dbPath = _customPath;
+      }
     }
-    _dbPath = p.join(appDocumentsDir.path, "databases", dbName);
 
     /**
      * Handle migrations
@@ -370,5 +379,19 @@ class DbHelper {
     }).toList();
 
     return map;
+  }
+
+  _syncDatabaseFile(bool shouldUpdateSource) async {
+    if (_customPath == null) {
+      return;
+    }
+
+    if(shouldUpdateSource) {
+      await _channel.invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
+    } else {
+      await _channel.invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
+    }
+
+    return;
   }
 }
