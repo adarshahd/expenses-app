@@ -29,12 +29,12 @@ jobs:
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> key.properties
           ls app/
         working-directory: ./android
-      - run: flutter build apk --target=lib/expenses.dart --split-per-abi
-      - run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk Expenses-arm64-v8a-signed.apk
+      - run: flutter build apk --split-per-abi
+      - run: mv build/app/outputs/flutter-apk/app-arm64-v8a-release.apk Expenses-arm64-v8a-signed-${{ github.ref_name }}.apk
       - name: Create release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "Expenses-arm64-v8a-signed.apk"
+          artifacts: "Expenses-arm64-v8a-signed-${{ github.ref_name }}.apk"
           tag: ${{ github.ref_name }}
           prerelease: true
           allowUpdates: true

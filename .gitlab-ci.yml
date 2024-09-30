@@ -23,7 +23,7 @@ android_build:
     - echo "storeFile=../../.secure_files/upload-keystore.jks" >> android/key.properties
     - echo "storePassword=$KEYSTORE_PASSWORD" >> android/key.properties
   script:
-    - flutter build apk --target=lib/expenses.dart --split-per-abi
+    - flutter build apk --split-per-abi
   cache:
     key:
       files:
