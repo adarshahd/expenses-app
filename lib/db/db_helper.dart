@@ -107,10 +107,19 @@ class DbHelper {
         where: 'key = ?',
         whereArgs: [key],
       );
+
+      if(Platform.isAndroid) {
+        await _syncDatabaseFile(true);
+      }
+
       return setting.id;
     } else {
       int id =
           await db.insert('settings', {'key': key, 'value': value.toString()});
+
+      if(Platform.isAndroid) {
+        await _syncDatabaseFile(true);
+      }
 
       return id;
     }
@@ -139,6 +148,10 @@ class DbHelper {
       'initial_balance': initialBalance,
       'default': isDefault ? 1 : 0
     });
+
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
 
     return id;
   }
@@ -219,6 +232,10 @@ class DbHelper {
       },
     );
 
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
+
     return id;
   }
 
@@ -237,6 +254,10 @@ class DbHelper {
       where: 'id = ?',
       whereArgs: [transaction.id],
     );
+
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
 
     return id;
   }
@@ -282,6 +303,10 @@ class DbHelper {
       },
     );
 
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
+
     return id;
   }
 
@@ -299,6 +324,10 @@ class DbHelper {
       where: 'id = ?',
       whereArgs: [categoryId],
     );
+
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
 
     return categoryId;
   }
@@ -329,6 +358,10 @@ class DbHelper {
       },
     );
 
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
+
     return id;
   }
 
@@ -347,6 +380,10 @@ class DbHelper {
       where: 'id = ?',
       whereArgs: [transactionCategoryId],
     );
+
+    if(Platform.isAndroid) {
+      await _syncDatabaseFile(true);
+    }
 
     return transactionCategoryId;
   }
