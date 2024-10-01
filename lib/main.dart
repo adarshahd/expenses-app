@@ -6,8 +6,8 @@ import 'package:expenses_app/screens/settings.dart';
 import 'package:expenses_app/utils/app_state_notifier.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/material.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:provider/provider.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,8 +78,10 @@ class _ExpensesState extends State<Expenses> {
 
   _getHome(context) {
     if (_isLoading) {
-      return const Center(
-        child: CircularProgressIndicator.adaptive(),
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator.adaptive(),
+        ),
       );
     }
 
@@ -87,22 +89,12 @@ class _ExpensesState extends State<Expenses> {
   }
 
   _getTheme(appState) {
-    if (appState.isDarkMode) {
-      return ThemeData.from(
-        useMaterial3: true,
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.blue,
-          secondary: Colors.blue,
-        ),
-      );
-    } else {
-      return ThemeData.from(
-        useMaterial3: true,
-        colorScheme: const ColorScheme.light(
-          primary: Colors.deepOrange,
-          secondary: Colors.deepOrangeAccent,
-        ),
-      );
-    }
+    return ThemeData.from(
+      useMaterial3: true,
+      colorScheme: const ColorScheme.light(
+        primary: Colors.deepPurple,
+        secondary: Colors.deepPurpleAccent,
+      ),
+    );
   }
 }

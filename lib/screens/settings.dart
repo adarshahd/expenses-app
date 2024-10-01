@@ -20,7 +20,8 @@ class Settings extends StatefulWidget {
 }
 
 class _SettingsState extends State<Settings> {
-  static const MethodChannel _channel = MethodChannel("io.gthink.expenses/file_operations");
+  static const MethodChannel _channel =
+      MethodChannel("io.gthink.expenses/file_operations");
 
   late Currency _currency;
   bool _isLoading = true;
@@ -51,15 +52,6 @@ class _SettingsState extends State<Settings> {
 
   @override
   Widget build(BuildContext context) {
-    String? directoryString = '';
-    if (_customPath != null) {
-      String customPath = '${_customPath!.substring(0, 30)}...';
-      directoryString =
-          'Custom location can result in performance degrade. Click and hold to reset. \n$customPath';
-    } else {
-      directoryString = 'Custom location can result in performance degrade.';
-    }
-
     return SafeArea(
       child: Scaffold(
         body: Container(
@@ -116,9 +108,16 @@ class _SettingsState extends State<Settings> {
               Card(
                 child: ListTile(
                   title: const Text('Database File Location'),
-                  subtitle: Text(directoryString),
+                  subtitle: Text(_customPath ?? ''),
                   isThreeLine: true,
                   leading: const Icon(Icons.storage_rounded),
+                  trailing: IconButton(
+                    onPressed: () => _showCustomPathAlert(),
+                    icon: const Icon(
+                      Icons.warning_amber,
+                      color: Colors.orange,
+                    ),
+                  ),
                   onTap: () => _showFilePicker(),
                   onLongPress:
                       _customPath == null ? () => {} : () => _showResetDialog(),
@@ -157,7 +156,7 @@ class _SettingsState extends State<Settings> {
 
   _showFilePicker() async {
     String? selectedFile;
-    if(!Platform.isAndroid) {
+    if (!Platform.isAndroid) {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         dialogTitle: 'Expenses storage location',
       );
@@ -235,5 +234,27 @@ class _SettingsState extends State<Settings> {
         _customPath = null;
       });
     }
+  }
+
+  _showCustomPathAlert() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Warning !!'),
+          content: const Text(
+            'Custom location can result in performance degrade.',
+          ),
+          actions: [
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text('Ok'),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }

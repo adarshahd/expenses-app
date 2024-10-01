@@ -42,8 +42,8 @@ class _DashboardState extends State<Dashboard> {
       child: Scaffold(
         body: _getBody(),
         floatingActionButton: FloatingActionButton(
-          child: const Icon(Icons.add),
           onPressed: () => _handleNewItemClick(context),
+          child: const Icon(Icons.add),
         ),
       ),
     );
@@ -77,7 +77,7 @@ class _DashboardState extends State<Dashboard> {
 
     return Container(
       margin: const EdgeInsets.all(8),
-      child: ListView(
+      child: Column(
         children: [
           SizedBox(
             height: _getChartHeight(),
@@ -90,8 +90,9 @@ class _DashboardState extends State<Dashboard> {
           //   style: Theme.of(context).textTheme.headlineSmall,
           // ),
           // const SizedBox(height: 16),
-          _getTransactionListView(),
-          const SizedBox(height: 96),
+          Expanded(
+            child: _getTransactionListView(),
+          ),
         ],
       ),
     );
@@ -144,6 +145,7 @@ class _DashboardState extends State<Dashboard> {
         );
       },
       itemCount: _transactions.length,
+      padding: const EdgeInsets.only(bottom: 64),
     );
   }
 

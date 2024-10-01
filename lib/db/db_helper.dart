@@ -424,7 +424,7 @@ class DbHelper {
     }
 
     if(shouldUpdateSource) {
-      await _channel.invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
+      await _channel.invokeMethod("copy_files", ['file://$_dbPath', _customPath]);
     } else {
       await _channel.invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
     }
