@@ -32,6 +32,11 @@ if (flutterTargetSdkVersion == null) {
     flutterTargetSdkVersion = flutter.targetSdkVersion
 }
 
+def flutterNdkVersion = localProperties.getProperty('flutter.ndkVersion')
+if (flutterNdkVersion == null) {
+    flutterNdkVersion = flutter.ndkVersion
+}
+
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
@@ -41,7 +46,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.example.expenses_app"
     compileSdk flutterCompileSdkVersion.toInteger()
-    ndkVersion flutter.ndkVersion
+    ndkVersion flutterNdkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
