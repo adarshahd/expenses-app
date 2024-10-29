@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:expenses_app/db/initialize.dart';
 import 'package:expenses_app/db/migrations.dart';
 import 'package:expenses_app/models/account_transaction.dart';
@@ -9,6 +10,7 @@ import 'package:expenses_app/models/charts/category_map.dart';
 import 'package:expenses_app/models/charts/transaction_total.dart';
 import 'package:expenses_app/models/settings.dart';
 import 'package:expenses_app/models/transaction_categories.dart';
+import 'package:expenses_app/models/transaction_filter.dart';
 import 'package:expenses_app/utils/constants.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
@@ -19,7 +21,8 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 class DbHelper {
   static final DbHelper _instance = DbHelper._();
 
-  static const MethodChannel _channel = MethodChannel("io.gthink.expenses/file_operations");
+  static const MethodChannel _channel =
+      MethodChannel("io.gthink.expenses/file_operations");
 
   DbHelper._() {}
 
@@ -41,7 +44,7 @@ class DbHelper {
     _dbPath = p.join(appDocumentsDir.path, '', dbName);
 
     if (_customPath != null) {
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         await _syncDatabaseFile(false);
       } else {
         _dbPath = _customPath;
@@ -108,7 +111,7 @@ class DbHelper {
         whereArgs: [key],
       );
 
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         await _syncDatabaseFile(true);
       }
 
@@ -117,7 +120,7 @@ class DbHelper {
       int id =
           await db.insert('settings', {'key': key, 'value': value.toString()});
 
-      if(Platform.isAndroid) {
+      if (Platform.isAndroid) {
         await _syncDatabaseFile(true);
       }
 
@@ -149,7 +152,7 @@ class DbHelper {
       'default': isDefault ? 1 : 0
     });
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -169,13 +172,31 @@ class DbHelper {
     return account;
   }
 
-  Future<List<AccountTransaction>> getTransactions() async {
+  Future<List<AccountTransaction>> getTransactions(
+      int? limit, TransactionFilterModel? filter) async {
     List<AccountTransaction> transactionList;
     Database? db = await databaseFactory.openDatabase(_dbPath!);
+    String whereClause = '';
+    if (filter == null) {
+      whereClause = 'deleted_at IS NULL';
+    } else {
+      String startDateTime = filter.startDate.toString();
+      String endDateTime = filter.endDate.toString();
+      int minAmount = (filter.minAmount * 100).floor();
+      int maxAmount = (filter.maxAmount * 100).floor();
+      whereClause =
+          "deleted_at IS NULL AND transaction_time BETWEEN '$startDateTime' AND '$endDateTime' AND total BETWEEN $minAmount AND $maxAmount";
+      if (filter.type != null) {
+        String txnType = filter.type!;
+        whereClause += " AND type = '$txnType'";
+      }
+    }
+
     var result = await db.query(
       'account_transactions',
-      where: 'deleted_at IS NULL',
+      where: whereClause,
       orderBy: 'datetime(transaction_time) desc',
+      limit: limit,
     );
 
     transactionList =
@@ -232,7 +253,7 @@ class DbHelper {
       },
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -255,7 +276,7 @@ class DbHelper {
       whereArgs: [transaction.id],
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -303,7 +324,7 @@ class DbHelper {
       },
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -325,7 +346,7 @@ class DbHelper {
       whereArgs: [categoryId],
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -358,7 +379,7 @@ class DbHelper {
       },
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -381,7 +402,7 @@ class DbHelper {
       whereArgs: [transactionCategoryId],
     );
 
-    if(Platform.isAndroid) {
+    if (Platform.isAndroid) {
       await _syncDatabaseFile(true);
     }
 
@@ -423,10 +444,12 @@ class DbHelper {
       return;
     }
 
-    if(shouldUpdateSource) {
-      await _channel.invokeMethod("copy_files", ['file://$_dbPath', _customPath]);
+    if (shouldUpdateSource) {
+      await _channel
+          .invokeMethod("copy_files", ['file://$_dbPath', _customPath]);
     } else {
-      await _channel.invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
+      await _channel
+          .invokeMethod("copy_files", [_customPath, 'file://$_dbPath']);
     }
 
     return;

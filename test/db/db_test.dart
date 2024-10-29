@@ -185,7 +185,7 @@ void main() {
 
       // Get all transactions
       List<AccountTransaction> transactions =
-          await DbHelper.instance.getTransactions();
+          await DbHelper.instance.getTransactions(null, null);
       expect(transactions, isNotEmpty);
 
       // Get all transactions for a particular account

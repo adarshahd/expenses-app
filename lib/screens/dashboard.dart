@@ -78,18 +78,22 @@ class _DashboardState extends State<Dashboard> {
     return Container(
       margin: const EdgeInsets.all(8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             height: _getChartHeight(),
             child: _getDashboardCharts(),
           ),
           const SizedBox(height: 8),
-          // Text(
-          //   "Recent Transactions",
-          //   textAlign: TextAlign.center,
-          //   style: Theme.of(context).textTheme.headlineSmall,
-          // ),
-          // const SizedBox(height: 16),
+          Container(
+            margin: const EdgeInsets.only(left: 8),
+            child: Text(
+              "Recent Transactions",
+              textAlign: TextAlign.start,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
+          const SizedBox(height: 8),
           Expanded(
             child: _getTransactionListView(),
           ),
@@ -107,7 +111,7 @@ class _DashboardState extends State<Dashboard> {
           child: PieChart(
             PieChartData(
               sectionsSpace: 2,
-              centerSpaceRadius: Utils.isLargeScreen(context) ? 72 : 32,
+              centerSpaceRadius: Utils.isLargeScreen(context) ? 48 : 32,
               sections: _getChartSections(),
             ),
           ),
@@ -293,7 +297,7 @@ class _DashboardState extends State<Dashboard> {
   }
 
   _getTransactions() async {
-    _transactions = await DbHelper.instance.getTransactions();
+    _transactions = await DbHelper.instance.getTransactions(5, null);
   }
 
   _getChartData() async {

@@ -1,5 +1,6 @@
 import 'package:expenses_app/screens/dashboard.dart';
 import 'package:expenses_app/screens/settings.dart';
+import 'package:expenses_app/screens/transactions.dart';
 import 'package:flutter/material.dart';
 
 class MobileContainer extends StatefulWidget {
@@ -14,6 +15,7 @@ class _MobileContainerState extends State<MobileContainer> {
 
   static const _bottomNavigationItems = [
     BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+    BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Transactions'),
     BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings')
   ];
 
@@ -59,6 +61,7 @@ class _MobileContainerState extends State<MobileContainer> {
       controller: _pageController,
       children: const [
         Dashboard(),
+        Transactions(),
         Settings(),
       ],
       onPageChanged: (index) {

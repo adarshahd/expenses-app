@@ -1,5 +1,6 @@
 import 'package:expenses_app/screens/dashboard.dart';
 import 'package:expenses_app/screens/settings.dart';
+import 'package:expenses_app/screens/transactions.dart';
 import 'package:flutter/material.dart';
 
 class DesktopContainer extends StatefulWidget {
@@ -54,14 +55,24 @@ class _DesktopContainerState extends State<DesktopContainer> {
             selected: _currentIndex == 0,
           ),
           ListTile(
-            title: const Text("Settings"),
-            leading: const Icon(Icons.settings),
+            title: const Text('Transactions'),
+            leading: const Icon(Icons.list),
             onTap: () {
               setState(() {
                 _currentIndex = 1;
               });
             },
             selected: _currentIndex == 1,
+          ),
+          ListTile(
+            title: const Text("Settings"),
+            leading: const Icon(Icons.settings),
+            onTap: () {
+              setState(() {
+                _currentIndex = 2;
+              });
+            },
+            selected: _currentIndex == 2,
           )
         ],
       ),
@@ -77,6 +88,8 @@ class _DesktopContainerState extends State<DesktopContainer> {
       case 0:
         return const Dashboard();
       case 1:
+        return const Transactions();
+      case 2:
         return const Settings();
     }
   }
