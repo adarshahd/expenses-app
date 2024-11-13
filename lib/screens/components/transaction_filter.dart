@@ -53,6 +53,7 @@ class _TransactionFilterState extends State<TransactionFilter> {
   @override
   Widget build(BuildContext context) {
     return Form(
+      key: _formKey,
       child: ListView(
         children: [
           const SizedBox(height: 8),
@@ -213,6 +214,10 @@ class _TransactionFilterState extends State<TransactionFilter> {
   }
 
   _applyFilter() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
     switch (_transactionType) {
       case TransactionType.all:
         _filter.type = null;
