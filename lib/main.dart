@@ -89,6 +89,16 @@ class _ExpensesState extends State<Expenses> {
   }
 
   _getTheme(appState) {
+    if (appState.isDarkMode) {
+      return ThemeData.from(
+        useMaterial3: true,
+        colorScheme: const ColorScheme.dark(
+          primary: Colors.deepPurple,
+          secondary: Colors.deepPurpleAccent,
+        ),
+      );
+    }
+
     return ThemeData.from(
       useMaterial3: true,
       colorScheme: const ColorScheme.light(
