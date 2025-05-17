@@ -3,7 +3,7 @@ name: CI
 on:
   push:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,11 +14,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: 3.22.0
+          flutter-version: 3.29.3
           cache: true
       - run: flutter config --no-cli-animations
       - run: flutter config --no-analytics
       - run: flutter pub get
       - run: flutter test
-
-  

@@ -45,3 +45,4 @@ app.*.map.json
 # Extra to support AS work simultaneously for both Dart & Kotlin
 gradle/
 local.properties
+android/app/.cxx/

@@ -18,7 +18,7 @@ android_build:
     - curl --silent "https://gitlab.com/gitlab-org/incubation-engineering/mobile-devops/download-secure-files/-/raw/main/installer" | bash
     - echo "flutter.targetSdkVersion=35" > android/local.properties
     - echo "flutter.compileSdkVersion=35" >> android/local.properties
-    - echo "flutter.ndkVersion=27.0.12077973" >> android/local.properties
+    - echo "flutter.ndkVersion=27.2.12479018" >> android/local.properties
     - echo "keyAlias=upload" > android/key.properties
     - echo "keyPassword=$KEYSTORE_PASSWORD" >> android/key.properties
     - echo "storeFile=../../.secure_files/upload-keystore.jks" >> android/key.properties
