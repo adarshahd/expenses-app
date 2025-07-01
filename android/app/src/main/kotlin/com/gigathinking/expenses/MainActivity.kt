@@ -1,4 +1,4 @@
-package com.example.expenses_app
+package com.gigathinking.expenses
 
 import android.app.Activity
 import android.content.Intent
@@ -24,9 +24,11 @@ class MainActivity : FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
 
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler {
-            call, result ->
-            if(call.method == "copy_files") {
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            CHANNEL
+        ).setMethodCallHandler { call, result ->
+            if (call.method == "copy_files") {
                 val arguments = call.arguments as ArrayList<*>
                 val sourcePath = arguments[0] as String
                 val destinationPath = arguments[1] as String
@@ -38,7 +40,7 @@ class MainActivity : FlutterActivity() {
                     val copyResult = copyFile(Uri.parse(sourcePath), Uri.parse(destinationPath))
                     result.success(copyResult)
                 }
-            } else if(call.method == "pick_file") {
+            } else if (call.method == "pick_file") {
                 pickFile(result)
             } else {
                 result.notImplemented()
@@ -47,7 +49,7 @@ class MainActivity : FlutterActivity() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if(requestCode == PICK_FILE && resultCode == Activity.RESULT_OK) {
+        if (requestCode == PICK_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data.toString()
             val contentResolver = applicationContext.contentResolver
 
@@ -70,17 +72,17 @@ class MainActivity : FlutterActivity() {
             type = "*/*"
         }
 
-        startActivityForResult(intent,PICK_FILE)
+        startActivityForResult(intent, PICK_FILE)
     }
 
-    private suspend fun copyFile(source: Uri, destination: Uri) : Int {
+    private suspend fun copyFile(source: Uri, destination: Uri): Int {
         withContext(Dispatchers.IO) {
             val inputStream = context.contentResolver.openInputStream(source)
             val outputStream = context.contentResolver.openOutputStream(destination)
             val buffer = ByteArray(1024)
             var length: Int
 
-            while(inputStream?.read(buffer).also { length = it!! }!! > 0) {
+            while (inputStream?.read(buffer).also { length = it!! }!! > 0) {
                 outputStream?.write(buffer, 0, length)
             }
 

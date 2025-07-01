@@ -16,7 +16,7 @@ buildscript {
             if ((subproject.plugins.hasPlugin("android") || subproject.plugins.hasPlugin("android-library"))) {
                 android {
                     compileSdkVersion 'android-35'
-                    buildToolsVersion '36.0.0'
+                    buildToolsVersion '35.0.0'
                 }
             }
         }
